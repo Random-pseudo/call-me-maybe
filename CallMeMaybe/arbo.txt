@@ -1,0 +1,30 @@
+call_me_maybe/
+├── Makefile                       # Règles mandatory (install, run, debug, clean, lint)
+├── pyproject.toml                 # Dépendances gérées par `uv`
+├── uv.lock
+├── data/
+│   ├── input/                     # Entrées fourni
+│   │   ├── function_calling_tests.json
+│   │   └── functions_definition.json
+│   └── output/                    # Fichier résultat généré (Ne PAS commiter dans Git!)
+│       └── function_calling_results.json
+├── llm_sdk/                       # SDK fourni avec le modèle Qwen/Qwen3-0.6B
+│   └── ...
+├── src/
+│   ├── __init__.py
+│   ├── __main__.py                # Point d'entrée CLI (parsing des arguments sys.argv/argparse)
+│   ├── models/                    # Modèles Pydantic pour la validation des données
+│   │   ├── __init__.py
+│   │   ├── functions.py           # Schéma d'une définition de fonction & ses paramètres
+│   │   ├── input_data.py          # Schéma d'une requête de test (input)
+│   │   └── output_data.py         # Schéma d'un résultat (output)
+│   ├── constrained_decoding/      # Le cœur algorithmique du projet
+│   │   ├── __init__.py
+│   │   ├── fsa_state_machine.py   # Machine à états finis / Automate JSON
+│   │   ├── mask_generator.py      # Module de calcul du masque de logits (NumPy)
+│   │   └── json_schema_parser.py  # Traducteur entre schémas Pydantic/JSON et règles FSA
+│   └── pipeline/                  # Orchestration complète du flux de travail
+│       ├── __init__.py
+│       ├── function_selector.py   # Choix de la bonne fonction via le LLM
+│       └── generator.py           # Boucle d'échantillonnage avec masquage pas à pas
+└── README.md                      # Documentation obligatoire en anglais avec phrase spécifique
