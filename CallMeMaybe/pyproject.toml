@@ -5,8 +5,21 @@ description = "Function calling with constrained decoding for LLMs"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-"numpy",
-"pydantic"
+    "numpy",
+    "pydantic",
+    "torch>=2.2.0",
+    "transformers>=4.40.0",
+    "huggingface-hub",
+]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[tool.uv.sources]
+torch = [
+    { index = "pytorch-cpu" },
 ]
 
 [project.optional-dependencies]
@@ -21,6 +34,15 @@ warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true
 disallow_incomplete_defs = true
+
+[[tool.mypy.overrides]]
+module = [
+    "llm_sdk.*",
+    "fire.*",
+    "colorama.*",
+]
+ignore_missing_imports = true
+ignore_errors = true
 
 [tool.flake8]
 max-line-length = 120

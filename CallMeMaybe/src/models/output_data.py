@@ -1,10 +1,11 @@
 """Pydantic models for the generated output results.
 
-This module ensures the final JSON output matches the expected format.
+This module ensures the final JSON output matches the expected format
+specified in the evaluation criteria.
 """
 
 from typing import Any, Dict, List
-from pydantic import BaseModel, Field, RootModel
+from pydantic import BaseModel, ConfigDict, Field, RootModel
 
 
 class FunctionCallResult(BaseModel):
@@ -13,10 +14,13 @@ class FunctionCallResult(BaseModel):
     Attributes:
         prompt: The original user prompt.
         name: The name of the function selected by the LLM.
-        parameters: The parsed parameters extracted by the LLM.
+        parameters: The parsed parameters extracted by the LLM
+            conforming to the function schema.
     """
 
-    prompt: str
+    model_config = ConfigDict(extra="forbid")
+
+    prompt: str = Field(..., min_length=1)
     name: str = Field(..., min_length=1)
     parameters: Dict[str, Any] = Field(default_factory=dict)
 

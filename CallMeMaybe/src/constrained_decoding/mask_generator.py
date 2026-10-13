@@ -4,35 +4,35 @@ This module applies a constraint mask to the language model's output logits,
 forcing all disallowed token IDs to negative infinity (-inf).
 """
 
-from typing import Any, List, Sequence
+from typing import Any, List
 import numpy as np
 
 
 def apply_logit_mask(
-    logits: Sequence[float] | np.ndarray[Any, Any],
+    logits: List[float],
     allowed_token_ids: List[int],
     mask_value: float = -np.inf,
 ) -> np.ndarray[Any, Any]:
-    """Apply a constraint mask to logits such that only allowed token IDs remain selectable.
+    """Apply a constraint mask to logits so only allowed IDs remain.
 
-    Disallowed token positions are replaced with negative infinity (or mask_value),
+    Disallowed token positions are replaced with -inf (or mask_value),
     ensuring their probability becomes zero under softmax.
 
     Args:
-        logits: Raw logit distribution over the vocabulary produced by the LLM.
+        logits: Raw logit distribution over the vocabulary.
         allowed_token_ids: List of integer token IDs permitted by the FSA.
         mask_value: Value used to penalize invalid tokens (defaults to -inf).
 
     Returns:
-        A NumPy array of masked logits with the same shape and precision as the input.
+        A NumPy array of masked logits with the same shape as the input.
 
     Raises:
-        ValueError: If allowed_token_ids is empty, preventing unconstrained generation.
+        ValueError: If allowed_token_ids is empty.
     """
     if not allowed_token_ids:
         raise ValueError("Cannot apply mask: allowed_token_ids list is empty.")
 
-    masked_logits: np.ndarray[Any, Any] = np.full(len(logits), mask_value, dtype=np.float32)
+    masked_logits = np.full(len(logits), mask_value, dtype=np.float32)
 
     indices = np.array(allowed_token_ids, dtype=np.int64)
     valid_indices = indices[(indices >= 0) & (indices < len(logits))]

@@ -1,13 +1,19 @@
-"""Models package for data validation."""
+"""Pydantic data models for the Call Me Maybe project."""
 
-from src.models.functions import FunctionDefinition, ParameterSchema, ReturnSchema
+from src.models.functions import (
+    FunctionDefinition,
+    FunctionsDefinitionList,
+    ParameterSchema,
+    ReturnSchema,
+)
 from src.models.input_data import PromptItem, QueryList
 from src.models.output_data import FunctionCallResult, FunctionCallResultList
 
 __all__ = [
-    "FunctionDefinition",
     "ParameterSchema",
     "ReturnSchema",
+    "FunctionDefinition",
+    "FunctionsDefinitionList",
     "PromptItem",
     "QueryList",
     "FunctionCallResult",

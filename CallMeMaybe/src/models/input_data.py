@@ -1,10 +1,11 @@
 """Pydantic models for the input test queries.
 
-This module validates the list of natural language prompts according to the project specifications.
+This module validates the list of natural language prompts
+according to the project specifications.
 """
 
 from typing import List
-from pydantic import BaseModel, Field, RootModel
+from pydantic import BaseModel, ConfigDict, Field, RootModel
 
 
 class PromptItem(BaseModel):
@@ -13,6 +14,8 @@ class PromptItem(BaseModel):
     Attributes:
         prompt: The natural language request string.
     """
+
+    model_config = ConfigDict(extra="allow")
 
     prompt: str = Field(..., min_length=1)
 
