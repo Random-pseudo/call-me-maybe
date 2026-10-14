@@ -4,7 +4,7 @@ This module converts Pydantic FunctionDefinition models into structured schemas
 consumed by the Finite State Automaton and Generation pipeline.
 """
 
-from typing import Any, Dict, List, Optional, Literal
+from typing import Dict, List, Optional, Literal
 from src.models.functions import FunctionDefinition
 
 
@@ -23,9 +23,7 @@ class ParsedParameterSchema:
         self,
         name: str,
         param_type: Literal["string", "number", "integer", "boolean"],
-        description: Optional[str] = None,
-        enum: Optional[List[Any]] = None,
-        default: Optional[Any] = None,
+
     ) -> None:
         """Initialize the parsed parameter schema.
 
@@ -38,15 +36,11 @@ class ParsedParameterSchema:
         """
         self.name = name
         self.type = param_type.lower()
-        self.description = description
-        self.enum = enum
-        self.default = default
 
     def __repr__(self) -> str:
         """Return a string representation for debugging."""
         return (
             f"ParsedParameterSchema(name={self.name!r}, type={self.type!r}, "
-            f"enum={self.enum!r}, default={self.default!r})"
         )
 
 
@@ -106,9 +100,6 @@ def parse_function_definitions(
             param_schemas[param_name] = ParsedParameterSchema(
                 name=param_name,
                 param_type=param_model.type,
-                description=param_model.description,
-                enum=param_model.enum,
-                default=param_model.default,
             )
         returns_t = fn.returns.type if fn.returns else None
         schemas[fn.name] = ParsedFunctionSchema(

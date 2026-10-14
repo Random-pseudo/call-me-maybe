@@ -6,7 +6,6 @@ Executes function calling pipeline using constrained decoding with Qwen3-0.6B.
 import argparse
 import os
 import sys
-from typing import Optional
 
 
 def parse_arguments() -> argparse.Namespace:
@@ -20,7 +19,6 @@ def parse_arguments() -> argparse.Namespace:
         add_help=True,
     )
 
-    # Function definitions path
     parser.add_argument(
         "--functions_definition",
         "--function_definitions",
@@ -29,11 +27,10 @@ def parse_arguments() -> argparse.Namespace:
         "--functions-definition",
         "-f",
         dest="functions_definition",
-        default=None,
+        default="data/input/functions_definition.json",
         help="Path to functions definition JSON file.",
     )
 
-    # Input tests path
     parser.add_argument(
         "--input",
         "-i",
@@ -44,7 +41,6 @@ def parse_arguments() -> argparse.Namespace:
         help="Path to input test prompts JSON file.",
     )
 
-    # Output path
     parser.add_argument(
         "--output",
         "-o",
@@ -58,38 +54,13 @@ def parse_arguments() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def resolve_functions_path(explicit_path: Optional[str]) -> str:
-    """Resolve function definitions path handling naming conventions.
-
-    Args:
-        explicit_path: User-provided path or None.
-
-    Returns:
-        The resolved filepath.
-    """
-    if explicit_path:
-        return explicit_path
-
-    # Check common default locations
-    default_names = [
-        "data/input/functions_definition.json",
-        "data/input/function_definitions.json",
-    ]
-    for candidate in default_names:
-        if os.path.exists(candidate):
-            return candidate
-
-    return default_names[0]
-
-
 def main() -> None:
     """Main execution function handling setup, validation, and pipeline."""
     args = parse_arguments()
-    functions_path = resolve_functions_path(args.functions_definition)
+    functions_path = args.functions_definition
     input_path = args.input_file
     output_path = args.output_file
 
-    # Validate file presence with clear error messages
     if not os.path.exists(functions_path):
         sys.stderr.write(
             f"Error: Function definitions file does not exist: "
@@ -103,7 +74,6 @@ def main() -> None:
         )
         sys.exit(1)
 
-    # Validate JSON syntax and Pydantic models early before loading LLM model
     import json
     from pydantic import ValidationError
     from src.models.functions import FunctionsDefinitionList
@@ -149,15 +119,6 @@ def main() -> None:
     except ValidationError as e:
         sys.stderr.write(f"Error: Input tests failed validation: {e}\n")
         sys.exit(1)
-
-    # Set cache directories if not already defined to avoid quota limits
-    if "HF_HOME" not in os.environ and os.path.exists("/tmp/hf_cache"):
-        os.environ["HF_HOME"] = "/tmp/hf_cache"
-
-    # If model is cached locally, enable offline mode
-    if os.environ.get("HF_HOME") and os.path.exists(os.environ["HF_HOME"]):
-        os.environ.setdefault("HF_HUB_OFFLINE", "1")
-        os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
 
     try:
         from llm_sdk.small_llm_model import Small_LLM_Model

@@ -148,7 +148,7 @@ def _generate_string(
 
     curr_ids.append(quote_id)
     val = ""
-    for _ in range(35):
+    for _ in range(30):
         logits = model.get_logits_from_input_ids(curr_ids)
         logits[newline_id] = -1e9
         next_id = int(np.argmax(logits))
@@ -161,55 +161,6 @@ def _generate_string(
         curr_ids.append(next_id)
 
     return val, curr_ids
-
-
-def _generate_enum(
-    model: Any,
-    curr_ids: List[int],
-    enum_values: List[Any],
-) -> tuple[str, List[int]]:
-    """Generate an enum parameter constrained to allowed options.
-
-    Args:
-        model: Instance of Small_LLM_Model.
-        curr_ids: Current sequence of token IDs.
-        enum_values: List of permitted option strings.
-
-    Returns:
-        A tuple of (parsed_enum, updated_token_ids).
-    """
-    targets = [f'"{opt}"' for opt in enum_values]
-    val_str = ""
-
-    while True:
-        candidates: List[int] = []
-        for t in targets:
-            if t.startswith(val_str):
-                rem = t[len(val_str):]
-                if rem:
-                    enc = model.encode(rem)
-                    if hasattr(enc, "tolist"):
-                        ids = enc.tolist()[0]
-                    else:
-                        ids = list(enc)
-                    if ids:
-                        candidates.append(int(ids[0]))
-
-        valid_ids = list(set(candidates))
-        if not valid_ids:
-            break
-
-        logits = model.get_logits_from_input_ids(curr_ids)
-        masked = apply_logit_mask(logits, valid_ids)
-        next_id = int(np.argmax(masked))
-        tok = model.decode([next_id])
-        val_str += tok
-        curr_ids.append(next_id)
-
-        if any(val_str == t for t in targets):
-            break
-
-    return val_str.strip('"'), curr_ids
 
 
 def generate_parameter_value(
@@ -233,9 +184,6 @@ def generate_parameter_value(
     """
     curr_ids = list(input_ids)
     ptype = param_schema.type
-
-    if param_schema.enum:
-        return _generate_enum(model, curr_ids, param_schema.enum)
 
     if ptype in ("integer", "int"):
         return _generate_integer(model, curr_ids, is_last)
@@ -282,10 +230,9 @@ def generate_function_call(
             prompt=query, name=selected_fn, parameters={}
         )
 
-    # Initialize prompt with chosen function
     prompt_str = (
         f"{system_prompt}\nUser query: {query}\n"
-        f'JSON call: {{"fn_name": "{selected_fn}", "args": {{'
+        f'JSON call: {{"name": "{selected_fn}", "parameters": {{'
     )
     encoded_prompt = model.encode(prompt_str)
     if hasattr(encoded_prompt, "tolist"):
@@ -375,7 +322,7 @@ def run_pipeline(
     system_prompt = (
         "You are an expert function calling assistant. "
         "Given the user query and available functions, "
-        "output a JSON object with 'fn_name' and 'args'.\n\n"
+        "output a JSON object with 'name' and 'parameters'.\n\n"
         f"Available functions:\n{funcs_doc}\n"
     )
 

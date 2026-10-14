@@ -32,12 +32,12 @@ def apply_logit_mask(
     if not allowed_token_ids:
         raise ValueError("Cannot apply mask: allowed_token_ids list is empty.")
 
-    masked_logits = np.full(len(logits), mask_value, dtype=np.float32)
+    masked_logits = np.full(len(logits), mask_value)
 
-    indices = np.array(allowed_token_ids, dtype=np.int64)
+    indices = np.array(allowed_token_ids)
     valid_indices = indices[(indices >= 0) & (indices < len(logits))]
 
-    original_array = np.asarray(logits, dtype=np.float32)
+    original_array = np.asarray(logits)
     masked_logits[valid_indices] = original_array[valid_indices]
 
     return masked_logits

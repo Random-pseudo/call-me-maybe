@@ -22,10 +22,7 @@ def format_functions_doc(schemas: Dict[str, ParsedFunctionSchema]) -> str:
     for fn in schemas.values():
         param_parts: List[str] = []
         for p in fn.parameters.values():
-            if p.enum:
-                param_parts.append(f"{p.name}: enum{p.enum}")
-            else:
-                param_parts.append(f"{p.name}: {p.type}")
+            param_parts.append(f"{p.name}: {p.type}")
         params_str = ", ".join(param_parts)
         lines.append(f"- {fn.name}({params_str}): {fn.description}")
     return "\n".join(lines)
@@ -55,7 +52,7 @@ def select_function_with_llm(
         return next(iter(schemas.keys()))
 
     prefix = f"{system_prompt}\nUser query: {query}\n"
-    base_prompt = f'{prefix}JSON call: {{"fn_name": "'
+    base_prompt = f'{prefix}JSON call: {{"name": "'
     encoded_base = model.encode(base_prompt)
     if hasattr(encoded_base, "tolist"):
         base_ids = encoded_base.tolist()[0]
@@ -77,8 +74,7 @@ def select_function_with_llm(
         curr_ids = list(base_ids)
         for tid in fname_ids:
             logits = model.get_logits_from_input_ids(curr_ids)
-            # Vectorized Log-softmax calculation using NumPy
-            arr = np.asarray(logits, dtype=np.float32)
+            arr = np.asarray(logits)
             max_l = float(np.max(arr))
             lse = max_l + float(np.log(np.sum(np.exp(arr - max_l))))
             score += float(arr[tid] - lse)

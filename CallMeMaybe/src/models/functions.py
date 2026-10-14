@@ -4,7 +4,7 @@ This module defines the schema for the functions available to the LLM,
 validating function metadata, parameters, and return types.
 """
 
-from typing import Any, Dict, List, Literal, Optional
+from typing import Dict, List, Literal, Optional
 from pydantic import BaseModel, ConfigDict, Field, RootModel
 
 
@@ -18,21 +18,6 @@ class ParameterSchema(BaseModel):
         enum: An optional list of predefined allowed values
             for enum constraints.
         default: An optional default value for the parameter.
-    """
-
-    model_config = ConfigDict(extra="allow")
-
-    type: Literal["string", "number", "integer", "boolean"]
-    description: Optional[str] = None
-    enum: Optional[List[Any]] = None
-    default: Optional[Any] = None
-
-
-class ReturnSchema(BaseModel):
-    """Schema definition for the return value of a function.
-
-    Attributes:
-        type: The data type of the return value.
     """
 
     model_config = ConfigDict(extra="allow")
@@ -55,7 +40,7 @@ class FunctionDefinition(BaseModel):
     name: str = Field(..., min_length=1)
     description: str
     parameters: Dict[str, ParameterSchema] = Field(default_factory=dict)
-    returns: Optional[ReturnSchema] = None
+    returns: Optional[ParameterSchema] = None
 
 
 class FunctionsDefinitionList(RootModel[List[FunctionDefinition]]):
